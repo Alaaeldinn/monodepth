@@ -32,10 +32,11 @@ masks = mask_generator.generate(image)
 
 # Function to estimate distance in millimeters
 def estimate_distance_mm(focal_length_mm, ppm, mask_generator, image_rgb , masks):
+    image_with_distances = image_rgb.copy()  # Create a copy of the image to draw on
     # Process each mask to get the width in pixels
     for mask in masks:
         bbox = mask['bbox']  # [x_min, y_min, width, height]
-        width_in_pixels = bbox[2]  # Index 2 corresponds to the width
+        x_min, y_min, width_in_pixels, _ = bbox
 
         # Calculate real width in millimeters using PPM
         real_width_mm = width_in_pixels / ppm
@@ -43,8 +44,8 @@ def estimate_distance_mm(focal_length_mm, ppm, mask_generator, image_rgb , masks
         # Estimate distance using D' = (W x F) / P
         distance_mm = (real_width_mm * focal_length_mm) / width_in_pixels
 
-        print(f"Mask Width in Pixels: {width_in_pixels}")
-        print(f"Real Width of the Object: {real_width_mm:.2f} millimeters")
-        print(f"Estimated Distance to the Object: {distance_mm:.0f} millimeters")
+        text = f"{distance_mm:.0f} mm"
+        cv2.putText(image_with_distances, text, (x_min, y_min - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
 
-    return distance_mm
+
+    return image_with_distances
